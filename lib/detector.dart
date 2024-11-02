@@ -30,11 +30,50 @@ class _DeviceDetectorState extends State<DeviceDetector> {
   int _currentSongIndex = 0;
   String _currentDownloadingSong = '';
   bool _isDownloading = false;
+  Timer? _companionUpdateTimer;
 
   @override
   void initState() {
     super.initState();
     _scanForDevices();
+
+    // Start periodic updates of companion file
+    _companionUpdateTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (_selectedDevicePath != null) {
+        _updateCompanionFile();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _companionUpdateTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _updateCompanionFile() async {
+    if (_selectedDevicePath == null) return;
+
+    try {
+      final companionData = CompanionData(
+        currentTime: DateTime.now(),
+        connected: true,
+        isDownloading: _isDownloading,
+        currentDownloadingSong: _currentDownloadingSong,
+        downloadProgress: _currentSongIndex,
+        totalSongs: _totalSongs,
+        lastError: _error.isNotEmpty ? _error : null,
+      );
+
+      final companionFile =
+          File(path.join(_selectedDevicePath!, 'companion.json'));
+      await companionFile.writeAsString(
+        jsonEncode(companionData.toJson()),
+        flush: true, // Ensure immediate write
+      );
+    } catch (e) {
+      print('Error updating companion file: $e');
+    }
   }
 
   Future<void> _scanForDevices() async {
@@ -174,7 +213,10 @@ class _DeviceDetectorState extends State<DeviceDetector> {
         ],
       );
 
+      await _updateCompanionFile();
+
       process.stdout.transform(utf8.decoder).listen((data) {
+        _updateCompanionFile();
         final lines = data.split('\n');
         for (var line in lines) {
           // Match total songs in playlist
@@ -230,6 +272,7 @@ class _DeviceDetectorState extends State<DeviceDetector> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
+      await _updateCompanionFile();
     } finally {
       setState(() {
         _isDownloading = false;
@@ -238,6 +281,7 @@ class _DeviceDetectorState extends State<DeviceDetector> {
         _totalSongs = 0;
       });
     }
+    await _updateCompanionFile();
   }
 
   Widget _buildDownloadProgress() {
@@ -399,6 +443,9 @@ class _DeviceDetectorState extends State<DeviceDetector> {
   }
 
   Future<void> _browseDirectory(String dirPath) async {
+    final wasConnected = _selectedDevicePath != null;
+    final newConnection = !wasConnected || _selectedDevicePath != dirPath;
+
     setState(() {
       _selectedDevicePath = dirPath;
       _currentPath = dirPath;
@@ -411,6 +458,12 @@ class _DeviceDetectorState extends State<DeviceDetector> {
     try {
       final dir = Directory(dirPath);
       if (await dir.exists()) {
+        // If this is a new connection, create/update companion file
+        if (newConnection) {
+          await _updateCompanionFile();
+        }
+
+        // Rest of your existing _browseDirectory code...
         final List<FileSystemEntity> allEntities = await dir.list().toList();
 
         final directories = allEntities.whereType<Directory>().toList()
@@ -718,4 +771,47 @@ class DeviceInfo {
     required this.id,
     required this.path,
   });
+}
+
+// Add this class to handle companion file data
+class CompanionData {
+  final DateTime currentTime;
+  final bool connected;
+  final bool isDownloading;
+  final String? currentDownloadingSong;
+  final int? downloadProgress;
+  final int? totalSongs;
+  final String? lastError;
+
+  CompanionData({
+    required this.currentTime,
+    required this.connected,
+    required this.isDownloading,
+    this.currentDownloadingSong,
+    this.downloadProgress,
+    this.totalSongs,
+    this.lastError,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'current_time': currentTime.toIso8601String(),
+        'connected': connected,
+        'is_downloading': isDownloading,
+        'current_downloading_song': currentDownloadingSong,
+        'download_progress': downloadProgress,
+        'total_songs': totalSongs,
+        'last_error': lastError,
+      };
+
+  factory CompanionData.fromJson(Map<String, dynamic> json) {
+    return CompanionData(
+      currentTime: DateTime.parse(json['current_time']),
+      connected: json['connected'] ?? false,
+      isDownloading: json['is_downloading'] ?? false,
+      currentDownloadingSong: json['current_downloading_song'],
+      downloadProgress: json['download_progress'],
+      totalSongs: json['total_songs'],
+      lastError: json['last_error'],
+    );
+  }
 }
