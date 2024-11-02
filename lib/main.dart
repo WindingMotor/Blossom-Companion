@@ -1,6 +1,5 @@
-import 'package:blossomcompanion/pages/music_library_page.dart';
+import 'package:blossomcompanion/detector.dart';
 import 'package:flutter/material.dart';
-import 'package:blossomcompanion/pages/song_list_page.dart';
 import 'package:metadata_god/metadata_god.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -38,7 +37,7 @@ class MainApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      home: const MusicLibraryPage(),
+      home: const DeviceDetector(),
     );
   }
 }
