@@ -306,6 +306,56 @@ class _DeviceDetectorState extends State<DeviceDetector> {
     }
   }
 
+  Future<void> _deleteFolder(Directory directory) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Deletion'),
+        content: Text(
+          'Are you sure you want to delete "${path.basename(directory.path)}" and all its contents? This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        setState(() {
+          _isLoading = true;
+        });
+
+        await directory.delete(recursive: true);
+
+        // Refresh the current directory
+        await _browseDirectory(_currentPath);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Folder deleted successfully')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting folder: $e')),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   Future<Music> _createMusicFromFile(File file) async {
     try {
       final metadata = await MetadataGod.readMetadata(file: file.path);
@@ -626,6 +676,11 @@ class _DeviceDetectorState extends State<DeviceDetector> {
                   return ListTile(
                     leading: const Icon(Icons.folder),
                     title: Text(path.basename(directory.path)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () => _deleteFolder(directory as Directory),
+                      tooltip: 'Delete folder',
+                    ),
                     onTap: () => _browseDirectory(directory.path),
                   );
                 },
