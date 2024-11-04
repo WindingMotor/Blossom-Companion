@@ -1,11 +1,13 @@
-import 'package:blossomcompanion/detector.dart';
+import 'package:blossomcompanion/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:metadata_god/metadata_god.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize metadata handling
   MetadataGod.initialize();
+
   runApp(const MainApp());
 }
 
@@ -32,12 +34,12 @@ class MainApp extends StatelessWidget {
           disabledColor: Colors.grey[700],
           selectedColor: Colors.pinkAccent,
           secondarySelectedColor: Colors.pinkAccent,
-          labelStyle: TextStyle(color: Colors.white),
-          secondaryLabelStyle: TextStyle(color: Colors.white),
+          labelStyle: const TextStyle(color: Colors.white),
+          secondaryLabelStyle: const TextStyle(color: Colors.white),
           brightness: Brightness.dark,
         ),
       ),
-      home: const DeviceDetector(),
+      home: const MainPage(),
     );
   }
 }

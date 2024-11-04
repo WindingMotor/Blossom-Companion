@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:blossomcompanion/utils/music.dart';
+import 'package:blossomcompanion/models/music.dart';
 import 'package:blossomcompanion/song_list/song_list_tile_wrapper.dart';
 
 class SongListBuilder extends StatefulWidget {
@@ -9,18 +9,18 @@ class SongListBuilder extends StatefulWidget {
   final Orientation? orientation;
 
   const SongListBuilder({
-    Key? key,
+    super.key,
     required this.songs,
     this.onTap,
     required this.orientation,
-  }) : super(key: key);
+  });
 
   @override
   SongListBuilderState createState() => SongListBuilderState();
 }
 
 class SongListBuilderState extends State<SongListBuilder> {
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   Timer? _scrollDebounce;
   double _scrollVelocity = 0.0;
 

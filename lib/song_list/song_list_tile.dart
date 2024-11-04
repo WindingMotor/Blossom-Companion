@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:blossomcompanion/utils/music.dart';
+import 'package:blossomcompanion/models/music.dart';
 import 'package:blossomcompanion/utils/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -10,11 +10,11 @@ class SongListTile extends StatelessWidget {
   final VoidCallback onLongPress;
 
   const SongListTile({
-    Key? key,
+    super.key,
     required this.song,
     required this.onTap,
     required this.onLongPress,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +57,7 @@ class SongListTile extends StatelessWidget {
 class _AlbumArt extends StatelessWidget {
   final Uint8List? picture;
 
-  const _AlbumArt({Key? key, required this.picture}) : super(key: key);
+  const _AlbumArt({required this.picture});
 
   @override
   Widget build(BuildContext context) {

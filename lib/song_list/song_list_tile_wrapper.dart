@@ -1,5 +1,5 @@
 import 'package:blossomcompanion/song_list/song_list_tile.dart';
-import 'package:blossomcompanion/utils/music.dart';
+import 'package:blossomcompanion/models/music.dart';
 import 'package:flutter/material.dart';
 
 class SongListTileWrapper extends StatelessWidget {
@@ -10,13 +10,13 @@ class SongListTileWrapper extends StatelessWidget {
   final VoidCallback onLongPress;
 
   const SongListTileWrapper({
-    Key? key,
+    super.key,
     required this.song,
     required this.isCurrentSong,
     required this.isSelected,
     required this.onTap,
     required this.onLongPress,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
