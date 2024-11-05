@@ -251,6 +251,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+// Bottom bar
   Widget _buildBottomBar() {
     return BottomAppBar(
       child: Row(
