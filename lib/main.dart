@@ -1,4 +1,4 @@
-import 'package:blossomcompanion/main_page.dart';
+import 'package:blossomcompanion/pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:metadata_god/metadata_god.dart';
 
